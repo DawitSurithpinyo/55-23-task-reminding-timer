@@ -1,0 +1,148 @@
+#include <LiquidCrystal.h>
+#define pie 13
+#define S_hour 10
+#define S_min 9
+#define S_sec 8
+#define S_start 7
+#define S_snooze 6
+
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+int time_hour;
+int time_min;
+int time_sec;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+void setup()
+{
+  lcd.begin(16, 2);
+  Serial.begin(6900);
+  pinMode(pie, OUTPUT);
+  pinMode(S_hour, INPUT);
+  pinMode(S_min, INPUT);
+  pinMode(S_sec, INPUT);
+  pinMode(S_start, INPUT);
+  pinMode(S_snooze, INPUT);
+}
+
+void loop()
+{
+  Clock();
+  /*
+  lcd.setCursor(1, 1);
+  lcd.print(time_hour);
+  lcd.setCursor(4, 1);
+  lcd.write(":");
+  lcd.setCursor(7, 1);
+  lcd.print(time_min);
+  lcd.setCursor(10, 1);
+  lcd.write(":"); 
+  lcd.setCursor(13, 1);
+  lcd.print(time_sec);*/
+  
+  if(digitalRead(S_hour) == 0)
+  {
+    time_hour = time_hour + 1;
+    delay(100);
+  }
+  if(digitalRead(S_min) == 0)
+  {
+    time_min = time_min + 1;
+    delay(100);
+    if(time_min >= 60)
+    {
+      lcd.clear();
+      time_min = 0;
+      time_hour++;
+    }
+  }
+  if(digitalRead(S_sec) == 0)
+  {
+    time_sec = time_sec + 1;
+    delay(100);
+    if(time_sec >= 60)
+    {
+      lcd.clear();
+      time_sec = 0;
+      time_min++;
+    }
+  }
+  
+  
+  if(digitalRead(S_start) == 0)
+  {
+    for(time_sec; time_sec >= 0; time_sec--)
+  	  {
+       Clock();
+       delay(1000);
+       lcd.clear();
+       
+       if(time_hour != 0)
+       {
+         if(time_min == 0)
+           {
+              time_hour = time_hour - 1;
+              time_min = 60;
+           }
+       }
+       
+       if(time_min != 0)
+       {
+         if(time_sec == 0)
+           {
+              time_min = time_min - 1;
+              time_sec = 60;
+           }
+       }
+     }
+    lcd.setCursor(0, 0);
+    if(Serial.available() > 0)
+      {
+        lcd.clear();
+        while(Serial.available() > 0)
+          {
+            lcd.write(Serial.read());
+          }
+      }
+    delay(100);
+    tone(pie, 500);
+  }
+  
+  if(digitalRead(S_snooze) == 0)
+    {
+      noTone(pie);
+    }
+}
+
+void Clock()
+{
+  lcd.setCursor(4, 1); lcd.print(":");
+  lcd.setCursor(11, 1); lcd.print(":");
+  if (time_hour <= 9) {
+      lcd.setCursor(1, 1); lcd.print("0");
+      lcd.setCursor(2, 1); lcd.print(time_hour);
+    }
+    else if (time_hour > 9) {
+      lcd.setCursor(1, 1); lcd.print(time_hour);
+    }
+
+    if (time_min <= 9) {
+      lcd.setCursor(7, 1); lcd.print("0");
+      lcd.setCursor(8, 1); lcd.print(time_min);
+    }
+    else if (time_min > 9) {
+      lcd.setCursor(7, 1); lcd.print(time_min);
+    }
+
+    if (time_sec <= 0) {
+     lcd.setCursor(13, 1); lcd.print("0");
+     lcd.setCursor(14, 1); lcd.print("0");
+    }
+    else if (time_sec <= 9) {
+      lcd.setCursor(13, 1); lcd.print("0");
+      lcd.setCursor(14, 1); lcd.print(time_sec);
+    }
+    else if (time_sec > 9) {
+      lcd.setCursor(13, 1); lcd.print(time_sec);
+    }
+   
+}
